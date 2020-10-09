@@ -38,6 +38,7 @@ class MyHomePage extends StatelessWidget {
                       width: MediaQuery.of(context).size.width * 0.35,
                       child: SimpleColorPicker(
                         height: MediaQuery.of(context).size.height * 0.55,
+                        width: MediaQuery.of(context).size.width * 0.35,
                         onColorSelect: (color) {
                           print(color);
                           Navigator.of(context).pop();
@@ -59,6 +60,7 @@ class MyHomePage extends StatelessWidget {
                 builder: (context) {
                   return SimpleColorPicker(
                     height: MediaQuery.of(context).size.height * 0.55,
+                    width: double.infinity,
                     onColorSelect: (color) {
                       print(color);
                       Navigator.of(context).pop();
