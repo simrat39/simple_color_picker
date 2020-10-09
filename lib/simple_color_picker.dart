@@ -79,7 +79,7 @@ class _MaterialColorPickerState extends State<_MaterialColorPicker> {
         return Container(
           width: double.infinity,
           height: widget.height,
-          color: Colors.white,
+          color: Theme.of(context).scaffoldBackgroundColor,
           child: Column(
             children: [
               Container(
@@ -199,6 +199,9 @@ class _ColorRowState extends State<ColorRow> {
             ),
             Text(
               color.color[widget.colorName].toString(),
+              style: TextStyle(
+                color: Theme.of(context).textTheme.headline6.color,
+              ),
             ),
           ],
         );
