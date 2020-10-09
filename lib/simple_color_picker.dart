@@ -82,16 +82,32 @@ class _MaterialColorPickerState extends State<_MaterialColorPicker> {
           color: Theme.of(context).scaffoldBackgroundColor,
           child: Column(
             children: [
-              Container(
-                width: double.infinity,
-                height: widget.height * 0.6,
-                color: col,
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    height: widget.height * 0.6,
+                    color: col,
+                  ),
+                  Center(
+                    child: Text(
+                      "#" + col.value.toRadixString(16).toUpperCase(),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20.0,
+                        color: col.computeLuminance() < 0.5
+                            ? Colors.white
+                            : Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.only(
-                    left: 16,
-                    right: 16,
+                    left: 20,
                     top: 8.0,
                   ),
                   child: Column(
@@ -99,19 +115,19 @@ class _MaterialColorPickerState extends State<_MaterialColorPicker> {
                     children: [
                       Expanded(
                         child: ColorRow(
-                          color: Colors.red,
+                          color: Colors.redAccent,
                           colorName: "red",
                         ),
                       ),
                       Expanded(
                         child: ColorRow(
-                          color: Colors.green,
+                          color: Colors.greenAccent,
                           colorName: "green",
                         ),
                       ),
                       Expanded(
                         child: ColorRow(
-                          color: Colors.blue,
+                          color: Colors.blueAccent,
                           colorName: "blue",
                         ),
                       ),
@@ -133,6 +149,21 @@ class _MaterialColorPickerState extends State<_MaterialColorPicker> {
                       },
                       child: Text(
                         "Cancel",
+                        style: TextStyle(
+                          color: col,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        selectedColor.setColor("red", widget.initialColor.red);
+                        selectedColor.setColor(
+                            "green", widget.initialColor.green);
+                        selectedColor.setColor(
+                            "blue", widget.initialColor.blue);
+                      },
+                      child: Text(
+                        "Reset",
                         style: TextStyle(
                           color: col,
                         ),
@@ -182,8 +213,7 @@ class _ColorRowState extends State<ColorRow> {
               widget.colorName[0].toUpperCase(),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 20.0,
-                color: widget.color,
+                color: Theme.of(context).hintColor,
               ),
             ),
             Expanded(
@@ -195,12 +225,8 @@ class _ColorRowState extends State<ColorRow> {
                 max: 255,
                 activeColor: widget.color,
                 inactiveColor: widget.color.withOpacity(0.2),
-              ),
-            ),
-            Text(
-              color.color[widget.colorName].toString(),
-              style: TextStyle(
-                color: Theme.of(context).textTheme.headline6.color,
+                divisions: 255,
+                label: color.color[widget.colorName].toString(),
               ),
             ),
           ],
