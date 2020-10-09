@@ -57,20 +57,16 @@ class MyHomePage extends StatelessWidget {
               onPressed: () => showModalBottomSheet(
                 context: context,
                 builder: (context) {
-                  return Container(
+                  return SimpleColorPicker(
                     height: MediaQuery.of(context).size.height * 0.55,
-                    width: MediaQuery.of(context).size.width * 0.35,
-                    child: SimpleColorPicker(
-                      height: MediaQuery.of(context).size.height * 0.55,
-                      onColorSelect: (color) {
-                        print(color);
-                        Navigator.of(context).pop();
-                      },
-                      onCancel: () {
-                        Navigator.of(context).pop();
-                      },
-                      initialColor: Color(0xffe50050),
-                    ),
+                    onColorSelect: (color) {
+                      print(color);
+                      Navigator.of(context).pop();
+                    },
+                    onCancel: () {
+                      Navigator.of(context).pop();
+                    },
+                    initialColor: Color(0xffe50050),
                   );
                 },
               ),

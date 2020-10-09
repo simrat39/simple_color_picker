@@ -89,23 +89,31 @@ class _MaterialColorPickerState extends State<_MaterialColorPicker> {
               ),
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 16,
+                  padding: EdgeInsets.only(
+                    left: 16,
+                    right: 16,
+                    top: 8.0,
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      ColorRow(
-                        color: Colors.red,
-                        colorName: "red",
+                      Expanded(
+                        child: ColorRow(
+                          color: Colors.red,
+                          colorName: "red",
+                        ),
                       ),
-                      ColorRow(
-                        color: Colors.green,
-                        colorName: "green",
+                      Expanded(
+                        child: ColorRow(
+                          color: Colors.green,
+                          colorName: "green",
+                        ),
                       ),
-                      ColorRow(
-                        color: Colors.blue,
-                        colorName: "blue",
+                      Expanded(
+                        child: ColorRow(
+                          color: Colors.blue,
+                          colorName: "blue",
+                        ),
                       ),
                     ],
                   ),
