@@ -9,12 +9,10 @@ class SimpleColorPicker extends StatelessWidget {
       @required this.height,
       @required this.onColorSelect,
       @required this.onCancel,
-      @required this.width,
       this.initialColor})
       : super(key: key);
 
   final double height;
-  final double width;
   final Function(Color color) onColorSelect;
   final Function() onCancel;
   final Color initialColor;
@@ -24,7 +22,6 @@ class SimpleColorPicker extends StatelessWidget {
     return ProviderScope(
       child: _MaterialColorPicker(
         height: this.height,
-        width: this.width,
         onColorSelect: this.onColorSelect,
         initialColor: this.initialColor,
         onCancel: this.onCancel,
@@ -39,14 +36,12 @@ class _MaterialColorPicker extends StatefulWidget {
   _MaterialColorPicker({
     Key key,
     @required this.height,
-    @required this.width,
     @required this.onColorSelect,
     this.initialColor,
     @required this.onCancel,
   }) : super(key: key);
 
   final double height;
-  final double width;
   final Function(Color color) onColorSelect;
   final Function() onCancel;
   final Color initialColor;
@@ -84,15 +79,8 @@ class _MaterialColorPickerState extends State<_MaterialColorPicker> {
   @override
   void initState() {
     _textEditingController = TextEditingController();
+    isValidated = true;
     super.initState();
-  }
-
-  double getFieldWidth() {
-    if (widget.width == double.infinity) {
-      return MediaQuery.of(context).size.width;
-    } else {
-      return widget.width;
-    }
   }
 
   @override
@@ -222,6 +210,9 @@ class _MaterialColorPickerState extends State<_MaterialColorPicker> {
                             widget.initialColor.red,
                             widget.initialColor.green,
                             widget.initialColor.blue);
+                        _textEditingController.text =
+                            selectedColor.getColor().value.toRadixString(16);
+                        isValidated = true;
                       },
                       child: Text(
                         "Reset",
