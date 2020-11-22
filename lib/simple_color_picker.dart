@@ -1,7 +1,6 @@
 library simple_color_picker;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/all.dart';
 
 class SimpleColorPicker extends StatelessWidget {
   const SimpleColorPicker(
@@ -19,13 +18,11 @@ class SimpleColorPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ProviderScope(
-      child: _MaterialColorPicker(
-        height: this.height,
-        onColorSelect: this.onColorSelect,
-        initialColor: this.initialColor,
-        onCancel: this.onCancel,
-      ),
+    return _MaterialColorPicker(
+      height: this.height,
+      onColorSelect: this.onColorSelect,
+      initialColor: this.initialColor,
+      onCancel: this.onCancel,
     );
   }
 }
@@ -50,23 +47,32 @@ class _MaterialColorPicker extends StatefulWidget {
   _MaterialColorPickerState createState() => _MaterialColorPickerState();
 }
 
-final colorProvider = ChangeNotifierProvider<SelectedColor>((ref) {
-  return SelectedColor();
-});
-
 class _MaterialColorPickerState extends State<_MaterialColorPicker> {
+  SelectedColor selectedColor = SelectedColor();
+  TextEditingController _textEditingController;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedColor.addListener(() {
+      setState(() {});
+    });
+    _textEditingController = TextEditingController();
+    isValidated = true;
+  }
+
   @override
   void didChangeDependencies() {
-    var selectedColor = context.read(colorProvider);
     if (widget.initialColor == null) {
       Color accent = Theme.of(context).accentColor;
-      selectedColor.setColorFromRgbInitial(
-          accent.red, accent.green, accent.blue);
+      selectedColor.setColorFromRgb(
+          accent.red, accent.green, accent.blue, true);
     } else {
-      selectedColor.setColorFromRgbInitial(
+      selectedColor.setColorFromRgb(
         widget.initialColor.red,
         widget.initialColor.green,
         widget.initialColor.blue,
+        true,
       );
     }
     _textEditingController.text =
@@ -74,221 +80,203 @@ class _MaterialColorPickerState extends State<_MaterialColorPicker> {
     super.didChangeDependencies();
   }
 
-  TextEditingController _textEditingController;
-
-  @override
-  void initState() {
-    _textEditingController = TextEditingController();
-    isValidated = true;
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Consumer(
-      builder: (context, watch, child) {
-        var selectedColor = watch(colorProvider);
-        Color col = selectedColor.getColor();
-        return Container(
-          width: double.infinity,
-          height: widget.height,
-          color: Theme.of(context).scaffoldBackgroundColor,
-          child: Column(
+    Color col = selectedColor.getColor();
+    return Container(
+      width: double.infinity,
+      height: widget.height,
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: Column(
+        children: [
+          Stack(
+            alignment: Alignment.center,
             children: [
-              Stack(
+              Container(
+                width: double.infinity,
+                height: widget.height * 0.6,
+                color: col,
+              ),
+              Positioned(
+                bottom: 10,
+                child: AnimatedOpacity(
+                  duration: Duration(milliseconds: 300),
+                  opacity: isValidated ? 0.0 : 1.0,
+                  child: Text(
+                    "Invalid Color",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: col.computeLuminance() < 0.5
+                          ? Colors.white
+                          : Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+              Align(
                 alignment: Alignment.center,
-                children: [
-                  Container(
-                    width: double.infinity,
-                    height: widget.height * 0.6,
-                    color: col,
+                child: TextField(
+                  controller: _textEditingController,
+                  onEditingComplete: () {
+                    String text = _textEditingController.text;
+                    if (text.length != 8 || !selectedColor.isValidColor(text)) {
+                      setState(() {
+                        isValidated = false;
+                      });
+                    } else {
+                      isValidated = true;
+                      selectedColor
+                          .setColorFromString(_textEditingController.text);
+                    }
+                  },
+                  textAlign: TextAlign.center,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
                   ),
-                  Positioned(
-                    bottom: 10,
-                    child: AnimatedOpacity(
-                      duration: Duration(milliseconds: 300),
-                      opacity: isValidated ? 0.0 : 1.0,
-                      child: Text(
-                        "Invalid Color",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: col.computeLuminance() < 0.5
-                              ? Colors.white
-                              : Colors.black,
-                        ),
-                      ),
-                    ),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20.0,
+                    color: col.computeLuminance() < 0.5
+                        ? Colors.white
+                        : Colors.black,
                   ),
-                  Align(
-                    alignment: Alignment.center,
-                    child: TextField(
-                      controller: _textEditingController,
-                      onEditingComplete: () {
-                        String text = _textEditingController.text;
-                        if (text.length != 8 ||
-                            !selectedColor.isValidColor(text)) {
-                          setState(() {
-                            isValidated = false;
-                          });
-                        } else {
-                          isValidated = true;
-                          selectedColor
-                              .setColorFromString(_textEditingController.text);
-                        }
-                      },
-                      textAlign: TextAlign.center,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                      ),
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20.0,
-                        color: col.computeLuminance() < 0.5
-                            ? Colors.white
-                            : Colors.black,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    left: 20,
-                    top: 8.0,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: ColorRow(
-                          color: Colors.redAccent,
-                          colorName: "red",
-                          textEditingController: _textEditingController,
-                        ),
-                      ),
-                      Expanded(
-                        child: ColorRow(
-                          color: Colors.greenAccent,
-                          colorName: "green",
-                          textEditingController: _textEditingController,
-                        ),
-                      ),
-                      Expanded(
-                        child: ColorRow(
-                          color: Colors.blueAccent,
-                          colorName: "blue",
-                          textEditingController: _textEditingController,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(
-                  bottom: 8.0,
-                  right: 8.0,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        widget.onCancel();
-                      },
-                      child: Text(
-                        "Cancel",
-                        style: TextStyle(
-                          color: col,
-                        ),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        selectedColor.setColorFromRgb(
-                            widget.initialColor.red,
-                            widget.initialColor.green,
-                            widget.initialColor.blue);
-                        _textEditingController.text =
-                            selectedColor.getColor().value.toRadixString(16);
-                        isValidated = true;
-                      },
-                      child: Text(
-                        "Reset",
-                        style: TextStyle(
-                          color: col,
-                        ),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        widget.onColorSelect(col);
-                      },
-                      child: Text(
-                        "Ok",
-                        style: TextStyle(
-                          color: col,
-                        ),
-                      ),
-                    )
-                  ],
                 ),
               ),
             ],
           ),
-        );
-      },
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                top: 8.0,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: ColorRow(
+                      color: Colors.redAccent,
+                      colorName: "red",
+                      textEditingController: _textEditingController,
+                      selectedColor: selectedColor,
+                    ),
+                  ),
+                  Expanded(
+                    child: ColorRow(
+                      color: Colors.greenAccent,
+                      colorName: "green",
+                      textEditingController: _textEditingController,
+                      selectedColor: selectedColor,
+                    ),
+                  ),
+                  Expanded(
+                    child: ColorRow(
+                      color: Colors.blueAccent,
+                      colorName: "blue",
+                      textEditingController: _textEditingController,
+                      selectedColor: selectedColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.only(
+              bottom: 8.0,
+              right: 8.0,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () {
+                    widget.onCancel();
+                  },
+                  child: Text(
+                    "Cancel",
+                    style: TextStyle(
+                      color: col,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    selectedColor.setColorFromRgb(widget.initialColor.red,
+                        widget.initialColor.green, widget.initialColor.blue);
+                    _textEditingController.text =
+                        selectedColor.getColor().value.toRadixString(16);
+                    isValidated = true;
+                  },
+                  child: Text(
+                    "Reset",
+                    style: TextStyle(
+                      color: col,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    widget.onColorSelect(col);
+                  },
+                  child: Text(
+                    "Ok",
+                    style: TextStyle(
+                      color: col,
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class ColorRow extends StatefulWidget {
-  ColorRow({Key key, this.colorName, this.color, this.textEditingController})
+class ColorRow extends StatelessWidget {
+  ColorRow(
+      {Key key,
+      this.colorName,
+      this.color,
+      this.textEditingController,
+      @required this.selectedColor})
       : super(key: key);
 
   final String colorName;
   final Color color;
   final TextEditingController textEditingController;
+  final SelectedColor selectedColor;
 
-  @override
-  _ColorRowState createState() => _ColorRowState();
-}
-
-class _ColorRowState extends State<ColorRow> {
   @override
   Widget build(BuildContext context) {
-    return Consumer(
-      builder: (context, watch, child) {
-        var color = watch(colorProvider);
-        return Row(
-          children: [
-            Text(
-              widget.colorName[0].toUpperCase(),
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).hintColor,
-              ),
-            ),
-            Expanded(
-              child: Slider(
-                value: color.color[widget.colorName].toDouble(),
-                onChanged: (value) {
-                  color.setIndividualColor(widget.colorName, value.floor());
-                  widget.textEditingController.text =
-                      color.getColor().value.toRadixString(16);
-                  isValidated = true;
-                },
-                max: 255,
-                activeColor: widget.color,
-                inactiveColor: widget.color.withOpacity(0.2),
-                divisions: 255,
-                label: color.color[widget.colorName].toString(),
-              ),
-            ),
-          ],
-        );
-      },
+    return Row(
+      children: [
+        Text(
+          colorName[0].toUpperCase(),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).hintColor,
+          ),
+        ),
+        Expanded(
+          child: Slider(
+            value: selectedColor.color[colorName].toDouble(),
+            onChanged: (value) {
+              selectedColor.setIndividualColor(colorName, value.floor());
+              textEditingController.text =
+                  selectedColor.getColor().value.toRadixString(16);
+              isValidated = true;
+            },
+            max: 255,
+            activeColor: color,
+            inactiveColor: color.withOpacity(0.2),
+            divisions: 255,
+            label: selectedColor.color[colorName].toString(),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -296,13 +284,9 @@ class _ColorRowState extends State<ColorRow> {
 class SelectedColor with ChangeNotifier {
   Map<String, int> color = {};
 
-  void setIndividualColor(String color, int val) {
+  void setIndividualColor(String color, int val, [bool notify]) {
     this.color[color] = val;
-    notifyListeners();
-  }
-
-  void setIndividualColorInitial(String color, int val) {
-    this.color[color] = val;
+    if (notify ?? true) notifyListeners();
   }
 
   Color getColor() {
@@ -314,16 +298,10 @@ class SelectedColor with ChangeNotifier {
     );
   }
 
-  void setColorFromRgb(int red, int green, int blue) {
-    setIndividualColor("red", red);
-    setIndividualColor("green", green);
-    setIndividualColor("blue", blue);
-  }
-
-  void setColorFromRgbInitial(int red, int green, int blue) {
-    setIndividualColorInitial("red", red);
-    setIndividualColorInitial("green", green);
-    setIndividualColorInitial("blue", blue);
+  void setColorFromRgb(int red, int green, int blue, [bool notify]) {
+    setIndividualColor("red", red, notify ?? true);
+    setIndividualColor("green", green, notify ?? true);
+    setIndividualColor("blue", blue, notify ?? true);
   }
 
   void setColorFromString(String radix) {
