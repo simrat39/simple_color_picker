@@ -41,10 +41,6 @@ class MyHomePage extends StatelessWidget {
                           print(color);
                           Navigator.of(context).pop();
                         },
-                        onCancel: () {
-                          Navigator.of(context).pop();
-                        },
-                        initialColor: Color(0xffe50050),
                       ),
                     ),
                   );

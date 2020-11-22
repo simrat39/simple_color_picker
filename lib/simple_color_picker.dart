@@ -3,18 +3,18 @@ library simple_color_picker;
 import 'package:flutter/material.dart';
 
 class SimpleColorPicker extends StatelessWidget {
-  const SimpleColorPicker(
-      {Key key,
-      @required this.height,
-      @required this.onColorSelect,
-      @required this.onCancel,
-      this.initialColor})
-      : super(key: key);
+  const SimpleColorPicker({
+    Key? key,
+    required this.height,
+    required this.onColorSelect,
+    this.onCancel,
+    this.initialColor,
+  }) : super(key: key);
 
   final double height;
   final Function(Color color) onColorSelect;
-  final Function() onCancel;
-  final Color initialColor;
+  final Function()? onCancel;
+  final Color? initialColor;
 
   @override
   Widget build(BuildContext context) {
@@ -31,17 +31,17 @@ bool isValidated = true;
 
 class _MaterialColorPicker extends StatefulWidget {
   _MaterialColorPicker({
-    Key key,
-    @required this.height,
-    @required this.onColorSelect,
+    Key? key,
+    required this.height,
+    required this.onColorSelect,
     this.initialColor,
-    @required this.onCancel,
+    this.onCancel,
   }) : super(key: key);
 
   final double height;
   final Function(Color color) onColorSelect;
-  final Function() onCancel;
-  final Color initialColor;
+  final Function()? onCancel;
+  final Color? initialColor;
 
   @override
   _MaterialColorPickerState createState() => _MaterialColorPickerState();
@@ -49,7 +49,8 @@ class _MaterialColorPicker extends StatefulWidget {
 
 class _MaterialColorPickerState extends State<_MaterialColorPicker> {
   SelectedColor selectedColor = SelectedColor();
-  TextEditingController _textEditingController;
+  late TextEditingController _textEditingController;
+  late Function() onCancel;
 
   @override
   void initState() {
@@ -69,14 +70,19 @@ class _MaterialColorPickerState extends State<_MaterialColorPicker> {
           accent.red, accent.green, accent.blue, true);
     } else {
       selectedColor.setColorFromRgb(
-        widget.initialColor.red,
-        widget.initialColor.green,
-        widget.initialColor.blue,
+        widget.initialColor!.red,
+        widget.initialColor!.green,
+        widget.initialColor!.blue,
         true,
       );
     }
     _textEditingController.text =
         selectedColor.getColor().value.toRadixString(16);
+    if (widget.onCancel == null) {
+      onCancel = () => Navigator.of(context)?.pop();
+    } else {
+      onCancel = widget.onCancel!;
+    }
     super.didChangeDependencies();
   }
 
@@ -191,7 +197,7 @@ class _MaterialColorPickerState extends State<_MaterialColorPicker> {
               children: [
                 TextButton(
                   onPressed: () {
-                    widget.onCancel();
+                    onCancel();
                   },
                   child: Text(
                     "Cancel",
@@ -202,8 +208,13 @@ class _MaterialColorPickerState extends State<_MaterialColorPicker> {
                 ),
                 TextButton(
                   onPressed: () {
-                    selectedColor.setColorFromRgb(widget.initialColor.red,
-                        widget.initialColor.green, widget.initialColor.blue);
+                    Color col = Colors.white;
+                    if (widget.initialColor == null) {
+                      col = Theme.of(context).accentColor;
+                    } else {
+                      col = widget.initialColor!;
+                    }
+                    selectedColor.setColorFromRgb(col.red, col.green, col.blue);
                     _textEditingController.text =
                         selectedColor.getColor().value.toRadixString(16);
                     isValidated = true;
@@ -236,13 +247,13 @@ class _MaterialColorPickerState extends State<_MaterialColorPicker> {
 }
 
 class ColorRow extends StatelessWidget {
-  ColorRow(
-      {Key key,
-      this.colorName,
-      this.color,
-      this.textEditingController,
-      @required this.selectedColor})
-      : super(key: key);
+  ColorRow({
+    Key? key,
+    required this.colorName,
+    required this.color,
+    required this.textEditingController,
+    required this.selectedColor,
+  }) : super(key: key);
 
   final String colorName;
   final Color color;
@@ -262,7 +273,7 @@ class ColorRow extends StatelessWidget {
         ),
         Expanded(
           child: Slider(
-            value: selectedColor.color[colorName].toDouble(),
+            value: selectedColor.color[colorName]?.toDouble() ?? 0.0,
             onChanged: (value) {
               selectedColor.setIndividualColor(colorName, value.floor());
               textEditingController.text =
@@ -282,26 +293,26 @@ class ColorRow extends StatelessWidget {
 }
 
 class SelectedColor with ChangeNotifier {
-  Map<String, int> color = {};
+  Map<String, int> color = {"red": 0, "green": 0, "blue": 0};
 
-  void setIndividualColor(String color, int val, [bool notify]) {
+  void setIndividualColor(String color, int val, [bool notify = true]) {
     this.color[color] = val;
-    if (notify ?? true) notifyListeners();
+    if (notify) notifyListeners();
   }
 
   Color getColor() {
     return Color.fromRGBO(
-      color["red"],
-      color["green"],
-      color["blue"],
+      color["red"]!,
+      color["green"]!,
+      color["blue"]!,
       1,
     );
   }
 
-  void setColorFromRgb(int red, int green, int blue, [bool notify]) {
-    setIndividualColor("red", red, notify ?? true);
-    setIndividualColor("green", green, notify ?? true);
-    setIndividualColor("blue", blue, notify ?? true);
+  void setColorFromRgb(int red, int green, int blue, [bool notify = true]) {
+    setIndividualColor("red", red, notify);
+    setIndividualColor("green", green, notify);
+    setIndividualColor("blue", blue, notify);
   }
 
   void setColorFromString(String radix) {
